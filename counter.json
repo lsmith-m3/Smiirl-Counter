@@ -5,58 +5,45 @@ const axios = require('axios'); // Import axios for HTTP requests
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
-    // Navigate to the password-protected page
     await page.goto('https://www.missionmobilemed.com/care-capacity-counter', {
         waitUntil: 'networkidle2',
     });
 
-    // Enter the password
     await page.type('input[type="password"]', 'MissionMed1!');
 
-    // Handle the dialog/modal
     page.on('dialog', async (dialog) => {
         console.log('Dialog detected:', dialog.message());
         await dialog.accept();
     });
 
-    // Submit the form programmatically
     await page.evaluate(() => {
         document.querySelector('input[type="submit"]').click();
     });
 
-    // Wait for navigation to complete
     await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
-    console.log('Logged in successfully!');
-
-    // Wait for dynamic content to load
     console.log('Waiting for the counter to fully load...');
-    await page.waitForTimeout(10000);
+    await new Promise((resolve) => setTimeout(resolve, 10000));
 
-    // Wait for the counter element to appear
     await page.waitForSelector('#num1_widget_1737660239621', { timeout: 30000 });
 
-    // Extract the counter value
-    const counterValue = await page.$eval('#num1_widget_1737660239621', (el) => {
+    let counterValue = await page.$eval('#num1_widget_1737660239621', (el) => {
         const text = el.textContent.trim();
         console.log('Raw Counter Text:', text);
         return parseInt(text.replace(/,/g, ''), 10);
     });
 
-    if (isNaN(counterValue)) {
-        console.error('Failed to extract a valid counter value.');
-        await browser.close();
-        return;
+    if (isNaN(counterValue) || counterValue < 0) {
+        console.error('Invalid counter value. Defaulting to 0.');
+        counterValue = 0;
     }
 
     console.log('Counter Value:', counterValue);
 
-    // Update the JSON file on GitHub
-    const githubApiUrl = 'https://lsmith-m3.github.io//smiirl-counter/contents/counter.json';
-    const token = 'your_personal_access_token'; // Replace with your GitHub Personal Access Token
+    const githubApiUrl = 'https://api.github.com/repos/<your-username>/smiirl-counter/contents/counter.json';
+    const token = 'your_personal_access_token';
 
     try {
-        // Get the current file SHA
         const { data: fileData } = await axios.get(githubApiUrl, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -65,7 +52,6 @@ const axios = require('axios'); // Import axios for HTTP requests
 
         const sha = fileData.sha;
 
-        // Update the file content
         const response = await axios.put(
             githubApiUrl,
             {
