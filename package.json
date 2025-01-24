@@ -2,9 +2,9 @@
   "name": "smiirl-counter",
   "version": "1.0.0",
   "description": "A script to update the Smiirl counter using Puppeteer",
-  "main": "counter.json",
+  "main": "script.js",
   "scripts": {
-    "start": "node counter.json"
+    "start": "node script.js"
   },
   "dependencies": {
     "axios": "^1.3.2",
