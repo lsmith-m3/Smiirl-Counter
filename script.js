@@ -2,70 +2,82 @@ const puppeteer = require('puppeteer');
 const axios = require('axios'); // Import axios for HTTP requests
 
 (async () => {
-    // Launch Puppeteer with --no-sandbox and --disable-setuid-sandbox flags
     const browser = await puppeteer.launch({
-        headless: true, // Run in headless mode for automation environments
+        headless: true, // Run headless for automation environments
         args: ['--no-sandbox', '--disable-setuid-sandbox'], // Disable sandboxing
     });
     const page = await browser.newPage();
 
-    // Navigate to the password-protected page
     await page.goto('https://www.missionmobilemed.com/care-capacity-counter', {
-        waitUntil: 'networkidle2', // Wait for most network requests to complete
+        waitUntil: 'networkidle2',
     });
 
-    // Enter the password
     await page.type('input[type="password"]', 'MissionMed1!');
 
-    // Handle the dialog/modal
     page.on('dialog', async (dialog) => {
         console.log('Dialog detected:', dialog.message());
-        await dialog.accept(); // Simulates clicking "OK" or "Submit"
+        await dialog.accept();
     });
 
-    // Submit the form programmatically
     await page.evaluate(() => {
         document.querySelector('input[type="submit"]').click();
     });
 
-    // Wait for navigation to complete
     await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
-    console.log('Logged in successfully!');
-
-    // Manual timeout function to wait 10 seconds
     console.log('Waiting for the counter to fully load...');
-    await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait for 10 seconds
+    await new Promise((resolve) => setTimeout(resolve, 10000));
 
-    // Wait for the counter element to appear
     await page.waitForSelector('#num1_widget_1737660239621', { timeout: 30000 });
 
-    // Extract the counter value
-    const counterValue = await page.$eval('#num1_widget_1737660239621', (el) => {
+    let counterValue = await page.$eval('#num1_widget_1737660239621', (el) => {
         const text = el.textContent.trim();
         console.log('Raw Counter Text:', text);
-        return parseInt(text.replace(/,/g, ''), 10); // Remove commas and parse as an integer
+        return parseInt(text.replace(/,/g, ''), 10);
     });
 
-    if (isNaN(counterValue)) {
-        console.error('Failed to extract a valid counter value.');
-        await browser.close();
-        return;
+    if (isNaN(counterValue) || counterValue < 0) {
+        console.error('Invalid counter value. Defaulting to 0.');
+        counterValue = 0;
     }
 
     console.log('Counter Value:', counterValue);
 
-    // Send the value to the Smiirl counter using Axios
-    const smiirlUrl = 'https://api.smiirl.com/v1/counter/e08e3c332414'; // Replace with your Smiirl Push URL
+    const githubApiUrl = 'https://api.github.com/repos/lsmith-m3/Smiirl-Counter/contents/counter.json';
+    const token = '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'; // Replace with your GitHub Personal Access Token
+
     try {
-        const response = await axios.post(smiirlUrl, { value: counterValue });
+        // Get the current file SHA to update the file
+        const { data: fileData } = await axios.get(githubApiUrl, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        const sha = fileData.sha;
+
+        // Update the file with the new counter value
+        const response = await axios.put(
+            githubApiUrl,
+            {
+                message: 'Update counter value',
+                content: Buffer.from(JSON.stringify({ number: counterValue })).toString('base64'),
+                sha: sha,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
         if (response.status === 200) {
-            console.log('Smiirl counter updated successfully!');
+            console.log('Counter value updated on GitHub successfully!');
         } else {
-            console.error('Failed to update Smiirl counter:', response.status, response.statusText);
+            console.error('Failed to update GitHub:', response.status, response.statusText);
         }
     } catch (err) {
-        console.error('Error updating Smiirl counter:', err.message || err);
+        console.error('Error updating GitHub:', err.message || err);
     }
 
     await browser.close();
