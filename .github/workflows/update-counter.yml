@@ -25,5 +25,5 @@ jobs:
       # Step 4: Run the Puppeteer script
       - name: Run Puppeteer script
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # Use the new Personal Access Token
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN_2 }} # Use the new Personal Access Token
         run: npm start
