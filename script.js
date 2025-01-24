@@ -8,17 +8,21 @@ const axios = require('axios'); // Import axios for HTTP requests
     });
     const page = await browser.newPage();
 
+    // Navigate to the password-protected page
     await page.goto('https://www.missionmobilemed.com/care-capacity-counter', {
         waitUntil: 'networkidle2',
     });
 
+    // Enter the password
     await page.type('input[type="password"]', 'MissionMed1!');
 
+    // Handle dialog/modal
     page.on('dialog', async (dialog) => {
         console.log('Dialog detected:', dialog.message());
         await dialog.accept();
     });
 
+    // Submit the form programmatically
     await page.evaluate(() => {
         document.querySelector('input[type="submit"]').click();
     });
@@ -28,6 +32,7 @@ const axios = require('axios'); // Import axios for HTTP requests
     console.log('Waiting for the counter to fully load...');
     await new Promise((resolve) => setTimeout(resolve, 10000));
 
+    // Extract the counter value
     await page.waitForSelector('#num1_widget_1737660239621', { timeout: 30000 });
 
     let counterValue = await page.$eval('#num1_widget_1737660239621', (el) => {
@@ -47,7 +52,8 @@ const axios = require('axios'); // Import axios for HTTP requests
     const token = 'PERSONAL_ACCESS_TOKEN_2'; // Replace with your GitHub Personal Access Token
 
     try {
-        // Get the current file SHA to update the file
+        // Attempt to fetch the current file metadata (to get the SHA)
+        console.log('Fetching file metadata...');
         const { data: fileData } = await axios.get(githubApiUrl, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -55,14 +61,16 @@ const axios = require('axios'); // Import axios for HTTP requests
         });
 
         const sha = fileData.sha;
+        console.log('File SHA:', sha);
 
-        // Update the file with the new counter value
+        // Update the file if it exists
+        console.log('Updating counter.json...');
         const response = await axios.put(
             githubApiUrl,
             {
                 message: 'Update counter value',
                 content: Buffer.from(JSON.stringify({ number: counterValue })).toString('base64'),
-                sha: sha,
+                sha: sha, // Use the existing SHA
             },
             {
                 headers: {
@@ -77,7 +85,30 @@ const axios = require('axios'); // Import axios for HTTP requests
             console.error('Failed to update GitHub:', response.status, response.statusText);
         }
     } catch (err) {
-        console.error('Error updating GitHub:', err.message || err);
+        if (err.response?.status === 404) {
+            // Handle case where file does not exist
+            console.log('File not found. Creating counter.json...');
+            const response = await axios.put(
+                githubApiUrl,
+                {
+                    message: 'Create counter.json',
+                    content: Buffer.from(JSON.stringify({ number: counterValue })).toString('base64'),
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (response.status === 201) {
+                console.log('Counter.json created successfully!');
+            } else {
+                console.error('Failed to create counter.json:', response.status, response.statusText);
+            }
+        } else {
+            // Log unexpected errors
+            console.error('Error updating GitHub:', err.response?.data || err.message || err);
+        }
     }
 
     await browser.close();
