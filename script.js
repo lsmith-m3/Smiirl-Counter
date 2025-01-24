@@ -44,7 +44,7 @@ const axios = require('axios'); // Import axios for HTTP requests
     console.log('Counter Value:', counterValue);
 
     const githubApiUrl = 'https://api.github.com/repos/lsmith-m3/Smiirl-Counter/contents/counter.json';
-    const token = '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'; // Replace with your GitHub Personal Access Token
+    const token = 'PERSONAL_ACCESS_TOKEN'; // Replace with your GitHub Personal Access Token
 
     try {
         // Get the current file SHA to update the file
