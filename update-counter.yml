@@ -26,4 +26,4 @@ jobs:
       - name: Run Puppeteer script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use a GitHub token for authentication
-        run: node script.js
+        run: node counter.json
