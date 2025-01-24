@@ -40,7 +40,7 @@ const axios = require('axios'); // Import axios for HTTP requests
 
     console.log('Counter Value:', counterValue);
 
-    const githubApiUrl = 'https://api.github.com/repos/<your-username>/smiirl-counter/contents/counter.json';
+    const githubApiUrl = 'https://lsmith-m3.github.io/Smiirl-Counter/contents/counter.json';
     const token = 'your_personal_access_token';
 
     try {
