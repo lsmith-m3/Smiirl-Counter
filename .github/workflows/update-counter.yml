@@ -8,28 +8,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout your repository code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '16'
 
+      # Step 3: Update package list and install Puppeteer dependencies
       - name: Install Puppeteer dependencies
-        run: sudo apt-get update && sudo apt-get install -y \
-          libnss3 \
-          libatk1.0-0 \
-          libx11-xcb1 \
-          libxcomposite1 \
-          libxrandr2 \
-          libgtk-3-0 \
-          libgbm1 \
-          liboss4-salsa-asound2 # Replace libasound2 with this package
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 \
+            libatk1.0-0 \
+            libx11-xcb1 \
+            libxcomposite1 \
+            libxrandr2 \
+            libgtk-3-0 \
+            libgbm-dev
 
-      - name: Install dependencies
+      # Step 4: Install project dependencies (like Puppeteer and Axios)
+      - name: Install Node.js dependencies
         run: npm install
 
+      # Step 5: Run your Puppeteer script
       - name: Run Puppeteer script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
