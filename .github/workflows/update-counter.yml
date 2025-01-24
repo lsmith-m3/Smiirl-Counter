@@ -1,29 +1,28 @@
 name: Update Smiirl Counter
 
 on:
-  workflow_dispatch: # Allows you to trigger the script manually from the Actions tab
+  workflow_dispatch: # Allows manual trigger from the Actions tab
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out your repository code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16' # Use the appropriate version for Puppeteer
+          node-version: '16'
 
-      # Step 3: Install dependencies
+      - name: Install Puppeteer dependencies
+        run: sudo apt-get install -y libnss3 libatk1.0-0 libx11-xcb1 libxcomposite1 libxrandr2 libgtk-3-0 libgbm1 libasound2
+
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Run your Puppeteer script
       - name: Run Puppeteer script
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use a GitHub token for authentication
-        run: node script.js
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm start
