@@ -2,7 +2,11 @@ const puppeteer = require('puppeteer');
 const axios = require('axios'); // Import axios for HTTP requests
 
 (async () => {
-    const browser = await puppeteer.launch({ headless: false }); // Keep browser visible for debugging
+    // Launch Puppeteer with --no-sandbox and --disable-setuid-sandbox flags
+    const browser = await puppeteer.launch({
+        headless: true, // Run in headless mode for automation environments
+        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Disable sandboxing
+    });
     const page = await browser.newPage();
 
     // Navigate to the password-protected page
