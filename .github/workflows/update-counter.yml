@@ -1,29 +1,30 @@
-name: Update Smiirl Counter
+name: Update Counter
 
 on:
-  workflow_dispatch: # Allows manual trigger from the Actions tab
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'  # Runs every hour (adjust as needed)
 
 jobs:
-  run-script:
+  update-counter:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write  # Ensure the workflow has permissions to update files
+
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '16'  # Set to your project's Node.js version
 
-      # Step 3: Install Node.js dependencies
-      - name: Install Node.js dependencies
+      - name: Install Dependencies
         run: npm install
 
-      # Step 4: Run the Puppeteer script
-      - name: Run Puppeteer script
+      - name: Run Counter Update Script
         env:
-          GITHUB_TOKEN: ${{ secrets.Smiirl_PAT }} # Use the new Personal Access Token
-        run: npm start
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub Actions
+        run: node script.js
