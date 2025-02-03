@@ -49,7 +49,7 @@ const axios = require('axios'); // Import axios for HTTP requests
     console.log('Counter Value:', counterValue);
 
     const githubApiUrl = 'https://api.github.com/repos/lsmith-m3/Smiirl-Counter/contents/counter.json';
-    const token = 'Smiirl_PAT'; // Replace with your GitHub Personal Access Token
+    const token = process.env.GH_TOKEN; // Use GITHUB_TOKEN provided by the workflow
 
     try {
         // Attempt to fetch the current file metadata (to get the SHA)
