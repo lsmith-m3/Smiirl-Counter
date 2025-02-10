@@ -33,9 +33,9 @@ const axios = require('axios'); // Import axios for HTTP requests
     await new Promise((resolve) => setTimeout(resolve, 10000));
 
     // Extract the counter value
-    await page.waitForSelector('#counter1', { timeout: 30000 });
+    await page.waitForSelector('#hs_cos_wrapper_module_1738946898185_', { timeout: 30000 });
 
-    let counterValue = await page.$eval('#counter', (el) => {
+    let counterValue = await page.$eval('#hs_cos_wrapper_module_1738946898185_', (el) => {
         const text = el.textContent.trim();
         console.log('Raw Counter Text:', text);
         return parseInt(text.replace(/,/g, ''), 10);
